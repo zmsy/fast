@@ -11,23 +11,32 @@ const ping = require("ping");
 
 // configure hosts and rows to insert into Postgres
 const hosts = ["www.google.com", "www.twitter.com", "www.cloudflare.com"];
-const conn = pg.Connection();
+// const client = pg.Client();
+// const conn = pg.Connection();
 
 Promise.all(
   hosts.map(host => {
-    ping.promise.probe(host).then(res => {
-      return [
-        res.host,
-        res.alive,
-        res.numeric_host,
-        res.avg,
-        res.max,
-        res.min
-      ];
-    }).catch(error => {
-      console.log("Error connecting to host.");
-    });
+    return ping.promise
+      .probe(host)
+      .then(res => {
+        return [
+          res.host,
+          res.alive,
+          res.numeric_host,
+          res.avg,
+          res.max,
+          res.min
+        ];
+      })
+      .catch(error => {
+        console.log("Error connecting to host.");
+        return null;
+      });
   })
 ).then(values => {
+  // insert all of the values into postgres
   console.log(values);
+  let valuesFiltered = values.filter(i => {
+    return i != null;
+  });
 });
