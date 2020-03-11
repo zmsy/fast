@@ -11,7 +11,7 @@ const ping = require("ping");
 
 // configure hosts and rows to insert into Postgres
 const hosts = ["www.google.com", "www.twitter.com", "www.cloudflare.com"];
-const pool = pg.Pool();
+const pool = new pg.Pool();
 
 Promise.all(
   hosts.map(host => {
@@ -34,22 +34,24 @@ Promise.all(
   })
 ).then(values => {
   // insert all of the values into postgres
-  console.log(values);
   let valuesFiltered = values.filter(i => {
     return i != null;
   });
   valuesFiltered.forEach(value => {
     const queryText = `
-      INSERT INTO fantasy.fast (host, alive, numeric_host, average, minimum, maximum)
-      VALUES ($1, $2, $3, $4, $5, $6)
+      INSERT INTO fantasy.fast
+      (host, alive, numeric_host, average, minimum, maximum)
+      VALUES
+      ($1, $2, $3, $4, $5, $6)
     `;
-    pool.query(
-      queryText, value, (err, _) => {
-      if (err) {
-        console.log("Error inserting rows to Postgres: " + str(err));
-      } else {
-        console.log("Inserted row: " + JSON.stringify(value));
-      }
-    });
+
+    pool
+      .query(queryText, value)
+      .then(res => {
+        console.log("Inserted row: " + JSON.stringify(res));
+      })
+      .catch(err => {
+        console.log("Error inserting row: " + JSON.stringify(err));
+      });
   });
 });
