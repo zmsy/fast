@@ -1,0 +1,16 @@
+{
+  "name": "fast",
+  "version": "1.0.0",
+  "description": "Checking my internet speed and posting it to postgres.",
+  "main": "fast.js",
+  "dependencies": {
+    "pg": "^7.18.2",
+    "ping": "^0.2.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "zachmor05@gmail.com",
+  "license": "ISC"
+}
