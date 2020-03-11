@@ -6,9 +6,28 @@
  * time and whether or not I'm actually getting the
  * internet connectivity issues that it seems like I am.
  */
-var pg = require("pg");
-var ping = require("ping");
+const pg = require("pg");
+const ping = require("ping");
 
-ping.promise.probe("www.google.com").then(function(res) {
-  console.log(JSON.stringify(res));
+// configure hosts and rows to insert into Postgres
+const hosts = ["www.google.com", "www.twitter.com", "www.cloudflare.com"];
+const conn = pg.Connection();
+
+Promise.all(
+  hosts.map(host => {
+    ping.promise.probe(host).then(res => {
+      return [
+        res.host,
+        res.alive,
+        res.numeric_host,
+        res.avg,
+        res.max,
+        res.min
+      ];
+    }).catch(error => {
+      console.log("Error connecting to host.");
+    });
+  })
+).then(values => {
+  console.log(values);
 });
