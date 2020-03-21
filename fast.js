@@ -14,26 +14,26 @@ const hosts = ["www.google.com", "www.cloudflare.com"];
 const pool = new pg.Pool();
 
 Promise.all(
-  hosts.map(host => {
-    return ping.promise
-      .probe(host, {
-        timeout: 10,
-        extra: ["-c", "5"]
-      })
-      .then(res => {
-        return [
-          res.host,
-          res.alive,
-          res.numeric_host,
-          res.avg,
-          res.max,
-          res.min
-        ];
-      })
-      .catch(error => {
-        console.log("Error connecting to host.");
-        return null;
-      });
+  hosts.map(async host => {
+    try {
+      const res = await ping.promise
+        .probe(host, {
+          timeout: 10,
+          extra: ["-c", "5"]
+        });
+      return [
+        res.host,
+        res.alive,
+        res.numeric_host,
+        res.avg,
+        res.max,
+        res.min
+      ];
+    }
+    catch (error) {
+      console.log("Error connecting to host.");
+      return null;
+    }
   })
 ).then(values => {
   // insert all of the values into postgres
@@ -50,11 +50,16 @@ Promise.all(
 
     pool
       .query(queryText, value)
-      .then(res => {
+      .then(_ => {
         console.log("Inserted row: " + JSON.stringify(value));
       })
       .catch(err => {
-        console.log("Error inserting row: " + JSON.stringify(err));
+        console.log(
+          "Error inserting row: " +
+            JSON.stringify(value) +
+            ", " +
+            JSON.stringify(err)
+        );
       });
   });
 });
